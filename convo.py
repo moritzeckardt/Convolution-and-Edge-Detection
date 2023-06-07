@@ -12,8 +12,9 @@ def make_kernel(ksize, sigma):
             y = j - center
             exponent = -(x**2 + y**2) / (2 * sigma**2)
             kernel[i, j] = (1 / 2 * np.pi * sigma**2) * np.exp(exponent)
-    
-    return kernel // np.sum(kernel)
+
+    kernel /= np.sum(kernel)
+    return kernel
 
 
 def slow_convolve(arr, k):
@@ -34,16 +35,18 @@ def slow_convolve(arr, k):
             image_matrix = img_padding[i:i+ksize, j:j+ksize]
             convolved_img[i, j] = np.sum(image_matrix * k)
     
-    return convolved_img
+    return convolved_img, img
 
 
 if __name__ == '__main__':
-    k = make_kernel(3, 1)   # todo: find better parameters
+    k = make_kernel(5, 2)   # todo: find better parameters
     
     # TODO: chose the image you prefer
     im = np.array(Image.open('input1.jpg'))
-    conv_img = slow_convolve(im, k)
-    image = Image.fromarray(conv_img.astype(np.uint8))
+    conv_img, gray_img = slow_convolve(im, k)
+
+    result = gray_img + (gray_img - conv_img)
+    image = Image.fromarray(result.astype(np.uint8))
     image.show()
     # im = np.array(Image.open('input2.jpg'))
     # im = np.array(Image.open('input3.jpg'))
