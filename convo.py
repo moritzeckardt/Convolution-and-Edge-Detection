@@ -19,38 +19,49 @@ def make_kernel(ksize, sigma):
 
 def slow_convolve(arr, k):
     #Zu grayscale ändern 
-    img = np.dot(arr, [0.2989, 0.5870, 0.1140])
-    padding_width = len(k) // 2
-    img_height, img_width = img.shape
-    ksize = k.shape[0]
+    #img = np.dot(arr, [0.2989, 0.5870, 0.1140]) 
+    img_height, img_width = arr.shape #Höhe und Breite des Bildes
+    kernel_height, kernel_width = k.shape
+    padding = kernel_height // 2
+
+    output_height = img_height + 2 * padding - kernel_height + 1 
+    output_width = img_width + 2 * padding - kernel_width + 1
+
+    convolved_img = np.zeros(shape=(output_height, output_width))
 
     #Bild mit zero padding
-    img_padding = np.pad(img, padding_width, mode='constant')
+    img_padding = np.pad(arr, padding, mode='constant')
     #img_padding[padding_width:-padding_width, padding_width:-padding_width] = img
 
-    convolved_img = np.zeros(shape=(img_height, img_width))
 
-    for i in range(img_height):
-        for j in range(img_width):
-            image_matrix = img_padding[i:i+ksize, j:j+ksize]
-            convolved_img[i, j] = np.sum(image_matrix * k)
+    for i in range(output_height):
+        for j in range(output_width):
+            for u in range(kernel_height):
+                for v in range(kernel_width):
+                    convolved_img[i, j] += k[u, v] * img_padding[i + u, j + v]
+            
+            
+            #image_matrix = img_padding[i:i+kernel_height, j:j+kernel_width]
+            #convolved_img[i, j] = np.sum(np.dot(image_matrix, k))
     
-    return convolved_img, img
+    return convolved_img
 
 
 if __name__ == '__main__':
-    k = make_kernel(5, 2)   # todo: find better parameters
+    k = make_kernel(9, 9/2)   # todo: find better parameters
     
     # TODO: chose the image you prefer
-    im = np.array(Image.open('input1.jpg'))
-    conv_img, gray_img = slow_convolve(im, k)
+    #im = np.array(Image.open('input1.jpg'))
+    im = np.array(Image.open('input2.jpg').convert('L'))
+    #im = np.array(Image.open('input3.jpg'))
 
-    result = gray_img + (gray_img - conv_img)
+    conv_img = slow_convolve(im, k)
+    
+    result = im + (im - conv_img)
+    result = np.clip(result, 0, 255)
     image = Image.fromarray(result.astype(np.uint8))
     image.show()
-    # im = np.array(Image.open('input2.jpg'))
-    # im = np.array(Image.open('input3.jpg'))
-    
+   
     # TODO: blur the image, subtract the result to the input,
     #       add the result to the input, clip the values to the
     #       range [0,255] (remember warme-up exercise?), convert
