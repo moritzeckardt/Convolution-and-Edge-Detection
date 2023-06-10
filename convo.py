@@ -17,7 +17,26 @@ def make_kernel(ksize, sigma):
 
 # Implement the convolution with padding
 def slow_convolve(arr, k):
-    return
+    image_height, image_width = arr.shape
+    kernel_height, kernel_width = k.shape
+
+    padding_height = kernel_height // 2
+    padding_width = kernel_width // 2
+
+    padded_image = np.pad(arr, ((padding_height, padding_height), (padding_width, padding_width)), mode='constant')
+
+    result = np.zeros_like(arr)
+
+    # Flip the kernel horizontally and vertically
+    flipped_kernel = np.flipud(np.fliplr(k))
+
+    for i in range(image_height):
+        for j in range(image_width):
+            for u in range(kernel_height):
+                for v in range(kernel_width):
+                    result[i, j] += flipped_kernel[u, v] * padded_image[i + u, j + v]
+
+    return result
 
 
 if __name__ == '__main__':

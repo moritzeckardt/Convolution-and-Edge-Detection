@@ -4,7 +4,7 @@ Created on 22.10.2020
 """
 
 import unittest
-import cv2
+#import cv2
 import numpy as np
 import os
 from convo import slow_convolve, make_kernel
