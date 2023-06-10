@@ -2,13 +2,18 @@ from PIL import Image
 import numpy as np
 
 
-# Implement the Gaussian kernel
+# Create gaussian kernel according to the formula in the exercise sheet
 def make_kernel(ksize, sigma):
-    # Create kernel according to the formula in the exercise sheet
-    kernel = np.fromfunction(lambda x, y: (1 / (2 * np.pi * sigma ** 2)) * np.exp(
-        -((x - ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (2 * sigma ** 2)), (ksize, ksize))
+    # Initialize the kernel
+    kernel = np.zeros((ksize, ksize))
 
-    # Normalize the kernel
+    # Apply the formula for each element in the kernel
+    for x in range(ksize):
+        for y in range(ksize):
+            exponent = -((x - ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (2 * sigma ** 2)
+            kernel[x, y] = (1 / (2 * np.pi * sigma ** 2)) * np.exp(exponent)
+
+    # Normalize the kernel -> Ensure that the sum of all elements in the kernel is 1
     kernel /= np.sum(kernel)
 
     # Return the kernel
