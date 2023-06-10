@@ -41,13 +41,20 @@ def slow_convolve(arr, k):
 
 if __name__ == '__main__':
     # Find best parameters for the kernel (ksize and sigma)
-    k = make_kernel(3, 2)
+    k = make_kernel(5, 5/2)
     print(k)
 
     # Load image
-    im = np.array(Image.open('input1.jpg'))
+    im = np.array(Image.open('input1.jpg').convert('L'))
     # im = np.array(Image.open('input2.jpg'))
     # im = np.array(Image.open('input3.jpg'))
+
+    result = im + (im - slow_convolve(im, k))
+    result = np.clip(result, 0, 255)
+
+    image = Image.fromarray(result.astype(np.uint8))
+    image.show()
+
 
     # TODO: blur the image, subtract the result to the input,
     #       add the result to the input, clip the values to the
