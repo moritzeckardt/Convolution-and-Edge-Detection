@@ -38,19 +38,25 @@ def slow_convolve(arr, k):
     # Create result image
     result_image = np.zeros((image_height, image_width))
 
-    # Flip the kernel horizontally and vertically without using numpy
-    flipped_kernel = np.zeros((kernel_height, kernel_width))
-    for x in range(kernel_height):
-        for y in range(kernel_width):
-            flipped_kernel[x, y] = k[kernel_height - x - 1, kernel_width - y - 1]
+    # Flip the kernel horizontally
+    rows = len(arr)
+    cols = len(arr[0])
+
+    for i in range(rows):
+        for j in range(cols // 2):
+            arr[i][j], arr[i][cols - j - 1] = arr[i][cols - j - 1], arr[i][j]
+
+    # Flip the kernel vertically
+    rows = len(arr)
+    cols = len(arr[0])
+    for i in range(rows // 2):
+        for j in range(cols):
+            arr[i][j], arr[rows - i - 1][j] = arr[rows - i - 1][j], arr[i][j]
 
     #
-    for i in range(image_height):
-        for j in range(image_width):
-            for u in range(kernel_height):
-                for v in range(kernel_width):
-                    result_image[i, j] += flipped_kernel[u, v] * padded_image[i + u, j + v]
+    # Code
 
+    # Return result image
     return result_image
 
 
@@ -58,6 +64,11 @@ if __name__ == '__main__':
     # Find best parameters for the kernel (ksize and sigma)
     k = make_kernel(3, 2)
     print(k)
+
+    # Test the convolution
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = np.array([[1, 0, 0], [0, 0, 0], [0, 0, 0]])
+    slow_convolve(a, b)
 
     # Load image
     im = np.array(Image.open('input1.jpg'))

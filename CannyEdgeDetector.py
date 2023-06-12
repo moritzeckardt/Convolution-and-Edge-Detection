@@ -17,6 +17,7 @@ def gaussFilter(img_in, ksize, sigma):
     :return: (kernel, filtered) kernel and gaussian filtered image (both np.ndarray)
     """
     # TODO
+
     pass
 
 
