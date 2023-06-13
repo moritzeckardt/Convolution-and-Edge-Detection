@@ -22,10 +22,14 @@ def slow_convolve(arr, k):
     #img = np.dot(arr, [0.2989, 0.5870, 0.1140]) 
     img_height, img_width = arr.shape #Höhe und Breite des Bildes
     kernel_height, kernel_width = k.shape
-    padding = kernel_height // 2
+    if(kernel_height > 1):
+        padding = kernel_height // 2
+    else:
+        padding = 1
 
-    output_height = img_height + 2 * padding - kernel_height + 1 
-    output_width = img_width + 2 * padding - kernel_width + 1
+
+    output_height = img_height + 2 * padding - kernel_height + 1
+    output_width = img_width + 2 * padding-1 - kernel_width + 1
 
 
     flipped_kernel = np.flipud(np.fliplr(k))
@@ -51,19 +55,23 @@ def slow_convolve(arr, k):
 
 
 if __name__ == '__main__':
-    k = make_kernel(9, 9/2)   # todo: find better parameters
+    k = make_kernel(5, 5/2)   # todo: find better parameters
     
     # TODO: chose the image you prefer
     #im = np.array(Image.open('input1.jpg'))
-    im = np.array(Image.open('input2.jpg').convert('L'))
+    #im = np.array(Image.open('input2.jpg').convert('L'))
     #im = np.array(Image.open('input3.jpg'))
-
-    conv_img = slow_convolve(im, k)
+    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = np.array([[1, 1], [2, 2], [3, 3]])
+    conv_img = slow_convolve(a, b).sum()
+    print(conv_img)
     
+    """
     result = im + (im - conv_img)
     result = np.clip(result, 0, 255)
     image = Image.fromarray(result.astype(np.uint8))
     image.show()
+    """
    
     # TODO: blur the image, subtract the result to the input,
     #       add the result to the input, clip the values to the

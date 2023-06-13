@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy
 from scipy.ndimage import convolve
 
 
@@ -16,8 +17,15 @@ def gaussFilter(img_in, ksize, sigma):
     :param sigma: sigma (float)
     :return: (kernel, filtered) kernel and gaussian filtered image (both np.ndarray)
     """
-    # TODO
-    pass
+    kernel = np.fromfunction(lambda x, y: (1 / (2 * np.pi * sigma ** 2)) * np.exp(
+        -((x-ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (2 * sigma ** 2)), (ksize, ksize))
+    
+    #Normalize kernel
+    kernel /= np.sum(kernel)
+
+    filtered_img = scipy.ndimage.convolve(img_in, kernel)
+
+    return (kernel, filtered_img)
 
 
 def sobel(img_in):
@@ -28,8 +36,18 @@ def sobel(img_in):
     :param img_in: input image (np.ndarray)
     :return: gx, gy - sobel filtered images in x- and y-direction (np.ndarray, np.ndarray)
     """
-    # TODO
-    pass
+    sobel_x = np.array([[-1, 0, 1], 
+                        [-2, 0, 2],
+                        [-1, 0, 1]])
+
+    sobel_y = np.array([[-1, -2, -1], 
+                        [0, 0, 0], 
+                        [1, 2, 1]])
+    
+    gx = scipy.ndimage.convolve(img_in, sobel_x)
+    gy = scipy.ndimage.convolve(img_in, sobel_y)
+
+    return gx, gy
 
 
 def gradientAndDirection(gx, gy):
