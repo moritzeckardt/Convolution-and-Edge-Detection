@@ -2,80 +2,116 @@ from PIL import Image
 import numpy as np
 
 
-# Create gaussian kernel according to the formula in the exercise sheet
+# Calculates the gaussian kernel
 def make_kernel(ksize, sigma):
-    # Initialize the kernel
+    '''
+    :param ksize: int kernel size
+    :param sigma: int
+    :return: 2d numpy array
+    '''
+    # Initiate an empty kernel and find its center
     kernel = np.zeros((ksize, ksize))
+    center = ksize // 2
 
-    # Apply the formula for each element in the kernel
-    for x in range(ksize):
-        for y in range(ksize):
-            exponent = -((x - ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (2 * sigma ** 2)  # Distance to center pixel
-            kernel[x, y] = (1 / (2 * np.pi * sigma ** 2)) * np.exp(exponent)
+    '''
+    Calculate the kernel values based on the Gaussian equation. G(x, y) = 1 / 2π*sigma2 exp(−(x^2 + y^2)/2sigma^2)
+    Where (x, y) is the current pixel position and sigma is the Gaussian parameter.
+    x^2+y^2 calculates the distance of the current pixel from the center pixel in the matrix.
+    '''
+    for i in range(ksize):
+        for j in range(ksize):
+            distance_squared = (i - center) ** 2 + (j - center) ** 2
+            kernel[i, j] = (1 / (2 * np.pi * sigma ** 2)) * np.exp(-distance_squared / (2 * sigma ** 2))
 
-    # Normalize the kernel -> Ensure that the sum of all elements in the kernel is 1
+    '''
+    Normalize the kernel to ensure the sum equals 1, this is important to ensure the average value of the image is 
+    preserved. Otherwise, the brightness might be changed. In the context of Gaussian blurring or smoothing, the kernel 
+    matrix represents the weights assigned to neighboring pixels. By normalizing the kernel, the blurring effect is 
+    evenly distributed across the image while preserving the average intensity.
+    '''
+
     kernel /= np.sum(kernel)
 
-    # Return the kernel
     return kernel
 
 
-# Implement the convolution with padding
+# Calculate the convolution of the original image and the kernel
 def slow_convolve(arr, k):
-    # Get image dimensions
-    image_height, image_width = arr.shape
+    '''
+    :param arr: input image as np array
+    :param k: kernel as np array
+    :return: out image as np array
+    '''
+    # Check if the input image has a color channel
+    if len(arr.shape) == 3:
+        image_height, image_width, channels = arr.shape
+        output_image = np.zeros_like(arr)
+    else:
+        image_height, image_width = arr.shape
+        output_image = np.zeros((image_height, image_width))
 
-    # Get kernel dimensions
+    ''' 
+    In case the input image isn't symmetrical, the padding has to be adjusted. Otherwise:
+    kernel_size = len(k)
+    padding = (kernel_size - 1) / 2
+    padded_image = np.pad(arr, padding, mode='constant')
+    '''
     kernel_height, kernel_width = k.shape
+    padding_height = (kernel_height - 1) // 2
+    padding_width = (kernel_width - 1) // 2
 
-    # Calculate the padding
-    padding_height = kernel_height // 2
-    padding_width = kernel_width // 2
+    if len(arr.shape) == 3:
+        # Pad the input with zeros for each channel separately
+        padded_image = np.pad(arr, ((padding_height, padding_height), (padding_width, padding_width), (0, 0)), mode='constant')
+    else:
+        padded_image = np.pad(arr, ((padding_height, padding_height), (padding_width, padding_width)), mode='constant')
 
-    # Apply padding to the image without using numpy
-    padded_image = np.zeros((image_height + 2 * padding_height, image_width + 2 * padding_width))
+    '''
+    Go over each pixel in the original image and calculate the new value using the convolution. It is important to 
+    use image_height and width before padding to only iterate over the original image and not the padded border.
+    '''
+    for i in range(image_height):
+        for j in range(image_width):
+            # Calculate convolution
+            convolution = 0
 
-    # Create result image
-    result_image = np.zeros((image_height, image_width))
+            # Iterate over u and v, which are the neighboring pixels, and multiply with the corresponding kernel value
+            for u in range(-padding_height, padding_height + 1):
+                for v in range(-padding_width, padding_width + 1):
+                    kernel_value = k[u + padding_height, v + padding_width]
+                    if len(arr.shape) == 3:
+                        image_value = padded_image[i + padding_height + u, j + padding_width + v, :]
+                    else:
+                        image_value = padded_image[i + padding_height + u, j + padding_width + v]
 
-    # Flip the kernel horizontally
-    rows = len(arr)
-    cols = len(arr[0])
+                    # Sum up the values for all neighbors and assign it as the new pixel value
+                    convolution += kernel_value * image_value
 
-    for i in range(rows):
-        for j in range(cols // 2):
-            arr[i][j], arr[i][cols - j - 1] = arr[i][cols - j - 1], arr[i][j]
+            if len(arr.shape) == 3:
+                output_image[i, j, :] = convolution
+            else:
+                output_image[i, j] = convolution
 
-    # Flip the kernel vertically
-    rows = len(arr)
-    cols = len(arr[0])
-    for i in range(rows // 2):
-        for j in range(cols):
-            arr[i][j], arr[rows - i - 1][j] = arr[rows - i - 1][j], arr[i][j]
-
-    #
-    # Code
-
-    # Return result image
-    return result_image
+    return output_image
 
 
 if __name__ == '__main__':
-    # Find best parameters for the kernel (ksize and sigma)
-    k = make_kernel(3, 2)
-    print(k)
 
-    # Test the convolution
-    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    b = np.array([[1, 0, 0], [0, 0, 0], [0, 0, 0]])
-    slow_convolve(a, b)
+    # Kernel size and sigma that controls the blurring effect
+    k = make_kernel(3, 2)  # todo: find better parameters
 
-    # Load image
+    # TODO: choose the image you prefer
     im = np.array(Image.open('input1.jpg'))
     # im = np.array(Image.open('input2.jpg'))
     # im = np.array(Image.open('input3.jpg'))
 
-    # TODO: blur the image, subtract the result to the input,
-    #       add the result to the input, clip the values to the
-    #       range [0,255] (remember warme-up exercise?), convert
-    #       the array to np.unit8, and save the result
+    # Convolving the image with the gaussian kernel
+    blurred_image = slow_convolve(im, k)
+
+    # Subtracting the result from the original
+    unsharp_mask = im - blurred_image
+    result = np.clip(im + unsharp_mask, 0, 255).astype(np.uint8)
+
+    # Save the result
+    result_image = Image.fromarray(result)
+    result_image.save('output.jpg')
