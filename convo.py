@@ -38,7 +38,7 @@ def slow_convolve(arr, k):
 
     #Bild mit zero padding
     padded_image = np.zeros((img_height + 2 * padding_height, img_width + 2 * padding_width))
-    padded_image[padding_height:-padding_height, padding_width:-padding_width] = arr
+    padded_image[padding_height:padding_height + img_height, padding_width:padding_width + img_width] = arr
 
 
     for i in range(img_height):
@@ -58,20 +58,17 @@ if __name__ == '__main__':
     k = make_kernel(5, 5/2)   # todo: find better parameters
     
     # TODO: chose the image you prefer
-    #im = np.array(Image.open('input1.jpg'))
+    im = np.array(Image.open('input1.jpg').convert('L'))
     #im = np.array(Image.open('input2.jpg').convert('L'))
-    #im = np.array(Image.open('input3.jpg'))
-    a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    b = np.array([[2]])
-    conv_img = slow_convolve(a, b).sum()
-    print(conv_img)
+    #im = np.array(Image.open('input3.jpg').convert('L'))
+    #a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    #b = np.array([[2]])
+    conv_img = slow_convolve(im, k)
     
-    """
     result = im + (im - conv_img)
     result = np.clip(result, 0, 255)
     image = Image.fromarray(result.astype(np.uint8))
     image.show()
-    """
    
     # TODO: blur the image, subtract the result to the input,
     #       add the result to the input, clip the values to the
