@@ -22,30 +22,30 @@ def slow_convolve(arr, k):
     #img = np.dot(arr, [0.2989, 0.5870, 0.1140]) 
     img_height, img_width = arr.shape #Höhe und Breite des Bildes
     kernel_height, kernel_width = k.shape
-    if(kernel_height > 1):
-        padding = kernel_height // 2
-    else:
-        padding = 1
+
+    padding_height = kernel_height // 2
+    padding_width = kernel_width // 2
 
 
-    output_height = img_height + 2 * padding - kernel_height + 1
-    output_width = img_width + 2 * padding-1 - kernel_width + 1
+    #output_height = img_height + 2 * padding - kernel_height + 1
+    #output_width = img_width + 2 * padding-1 - kernel_width + 1
 
-
+    #Flip the kernel
     flipped_kernel = np.flipud(np.fliplr(k))
 
+    #Result image
     convolved_img = np.zeros_like(arr)
 
     #Bild mit zero padding
-    img_padding = np.pad(arr, padding, mode='constant')
-    #img_padding[padding_width:-padding_width, padding_width:-padding_width] = img
+    padded_image = np.zeros((img_height + 2 * padding_height, img_width + 2 * padding_width))
+    padded_image[padding_height:-padding_height, padding_width:-padding_width] = arr
 
 
     for i in range(img_height):
         for j in range(img_width):
             for u in range(kernel_height):
                 for v in range(kernel_width):
-                    convolved_img[i, j] += flipped_kernel[u, v] * img_padding[i + u, j + v]
+                    convolved_img[i, j] += flipped_kernel[u, v] * padded_image[i + u, j + v]
             
             
             #image_matrix = img_padding[i:i+kernel_height, j:j+kernel_width]
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     #im = np.array(Image.open('input2.jpg').convert('L'))
     #im = np.array(Image.open('input3.jpg'))
     a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    b = np.array([[1, 1], [2, 2], [3, 3]])
+    b = np.array([[2]])
     conv_img = slow_convolve(a, b).sum()
     print(conv_img)
     
