@@ -16,9 +16,24 @@ def gaussFilter(img_in, ksize, sigma):
     :param sigma: sigma (float)
     :return: (kernel, filtered) kernel and gaussian filtered image (both np.ndarray)
     """
-    # TODO
+    # Create gaussian kernel
+    kernel = np.zeros((ksize, ksize), np.float32)
+    center = ksize // 2
 
-    pass
+    # Apply the formula for each element in the kernel
+    for x in range(ksize):
+        for y in range(ksize):
+            exponent = -((x - ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (2 * sigma ** 2)  # Distance to center pixel
+            kernel[x, y] = (1 / (2 * np.pi * sigma ** 2)) * np.exp(exponent)
+
+    # Normalize the kernel -> Ensure that the sum of all elements in the kernel is 1
+    kernel /= np.sum(kernel)
+
+    # Apply convolution
+    convolved_image = convolve(img_in, kernel)
+
+    # Return convolved image
+    return kernel, convolved_image
 
 
 def sobel(img_in):
