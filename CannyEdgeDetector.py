@@ -57,8 +57,9 @@ def gradientAndDirection(gx, gy):
     :param gy: sobel filtered image in x direction (np.ndarray)
     :return: g, theta (np.ndarray, np.ndarray)
     """
-    # TODO
-    pass
+    g = np.sqrt(gx**2 + gy**2)
+
+    return g
 
 
 def convertAngle(angle):
@@ -103,6 +104,9 @@ def canny(img):
 
     # sobel
     gx, gy = sobel(gauss)
+
+    #Gradient magnitude
+    magnitude = gradientAndDirection(gx, gy)
 
     # plotting
     plt.subplot(1, 2, 1)
