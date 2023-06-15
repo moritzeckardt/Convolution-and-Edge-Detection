@@ -63,7 +63,7 @@ if __name__ == '__main__':
     test_image = slow_convolve(a, b)
 
     # Load image
-    im = np.array(Image.open('input1.jpg'))
+    im = np.array(Image.open('input1.jpg').convert('L'))
     # im = np.array(Image.open('input2.jpg').convert('L'))
     # im = np.array(Image.open('input3.jpg').convert('L'))
 
