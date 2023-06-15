@@ -38,23 +38,14 @@ def slow_convolve(arr, k):
     # Create result image
     result_image = np.zeros((image_height, image_width))
 
-    # Flip the kernel horizontally
-    rows = len(arr)
-    cols = len(arr[0])
+    # Flip
+    flipped_kernel = np.flipud(np.fliplr(k))
 
-    for i in range(rows):
-        for j in range(cols // 2):
-            arr[i][j], arr[i][cols - j - 1] = arr[i][cols - j - 1], arr[i][j]
-
-    # Flip the kernel vertically
-    rows = len(arr)
-    cols = len(arr[0])
-    for i in range(rows // 2):
-        for j in range(cols):
-            arr[i][j], arr[rows - i - 1][j] = arr[rows - i - 1][j], arr[i][j]
-
-    #
-    # Code
+    for i in range(image_height):
+        for j in range(image_height):
+            for u in range(kernel_height):
+                for v in range(kernel_width):
+                    result_image[i, j] += flipped_kernel[u, v] * padded_image[i + u, j + v]
 
     # Return result image
     return result_image
