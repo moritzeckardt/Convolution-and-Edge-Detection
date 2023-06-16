@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import convolve
+from PIL import Image
 
 
 #
@@ -38,7 +39,7 @@ def sobel(img_in):
     :param img_in: input image (np.ndarray)
     :return: gx, gy - sobel filtered images in x- and y-direction (np.ndarray, np.ndarray)
     """
-    kernel_x = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
 
     gx = convolve(img_in, kernel_x)
@@ -148,7 +149,7 @@ def hysteris(max_sup, t_low, t_high):
 
 def canny(img):
     # gaussian
-    kernel, gauss = gaussFilter(img, 5, 2)
+    kernel, gauss = gaussFilter(img, 5, 3)
 
     # sobel
     gx, gy = sobel(gauss)
@@ -188,3 +189,7 @@ def canny(img):
     result = hysteris(maxS_img, 50, 75)
 
     return result
+
+if __name__ == "__main__":
+    img = np.array(Image.open('contrast.jpg').convert('L'))
+    canny(img)
