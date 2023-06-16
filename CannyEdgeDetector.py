@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
+from PIL import Image
 from scipy.ndimage import convolve
 
 
@@ -23,9 +23,9 @@ def gaussFilter(img_in, ksize, sigma):
     #Normalize kernel
     kernel /= np.sum(kernel)
 
-    filtered_img = scipy.ndimage.convolve(img_in, kernel)
+    filtered_img = convolve(img_in, kernel)
 
-    return (kernel, filtered_img)
+    return kernel, filtered_img.astype(int)
 
 
 def sobel(img_in):
@@ -43,9 +43,9 @@ def sobel(img_in):
     sobel_y = np.array([[-1, -2, -1], 
                         [0, 0, 0], 
                         [1, 2, 1]])
-    
-    gx = scipy.ndimage.convolve(img_in, sobel_x)
-    gy = scipy.ndimage.convolve(img_in, sobel_y)
+
+    gx = convolve(img_in, sobel_x)
+    gy = convolve(img_in, sobel_y)
 
     return gx, gy
 
@@ -59,7 +59,9 @@ def gradientAndDirection(gx, gy):
     """
     g = np.sqrt(gx**2 + gy**2)
 
-    return g
+    theta = np.arctan2(gx, gy)
+
+    return g.astype(int), theta
 
 
 def convertAngle(angle):
@@ -68,8 +70,16 @@ def convertAngle(angle):
     :param angle: in radians
     :return: nearest match of {0, 45, 90, 135}
     """
-    # TODO
-    pass
+    angle = np.rad2deg(angle) % 180
+    if angle <= 22.5 or angle >= 157.5:
+        return 0
+    elif angle < 67.5:
+        return 46
+    elif angle < 112.5:
+        return 90
+    else:
+        return 135
+    
 
 
 def maxSuppress(g, theta):
@@ -79,8 +89,35 @@ def maxSuppress(g, theta):
     :param theta: 2d image (np.ndarray)
     :return: max_sup (np.ndarray)
     """
-    # TODO Hint: For 2.3.1 and 2 use the helper method above
-    pass
+    x, y = g.shape
+    max_sup = np.zeros_like(g)
+
+    for i in range(1, x - 1):
+        for j in range(1, y - 1):
+            angle = convertAngle(theta[i, j])
+            if angle == 0:
+                if g[i, j] >= g[i, j -1] and g[i, j] >= g[i, j +1]:
+                    max_sup[i, j] = g[i, j]
+            elif angle == 45:
+                if g[i, j] >= g[i + 1, j - 1] and g[i, j] >= g[i - 1, j + 1]:
+                    max_sup[i, j] = g[i, j]
+            elif angle == 90:
+                if g[i, j] >= g[i - 1, j] and g[i, j] >= g[i + 1, j]:
+                    max_sup[i, j] = g[i, j]
+            else:
+                if g[i, j] >= g[i - 1, j -1] and g[i, j] >= g[i + 1, j +1]:
+                    max_sup[i, j] = g[i, j]
+
+    return max_sup
+
+img = np.array(Image.open('contrast.jpg').convert('L'))
+img_blurr, gauss_kernel = gaussFilter(img, 5, 2)
+sobel_x, sobel_y = sobel(img_blurr)
+gradient_mag, theta = gradientAndDirection(sobel_x, sobel_y)
+surpressed = maxSuppress(gradient_mag, theta)
+
+image = Image.fromarray(surpressed)
+image.show()
 
 
 def hysteris(max_sup, t_low, t_high):
@@ -96,6 +133,7 @@ def hysteris(max_sup, t_low, t_high):
     """
     # TODO
     pass
+
 
 
 def canny(img):
