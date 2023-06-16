@@ -7,7 +7,7 @@ import unittest
 import cv2
 import numpy as np
 #from CannyEdgeDetector_solution import gaussFilter, sobel, gradientAndDirection, maxSuppress, hysteris, convertAngle
-from CannyEdgeDetector import gaussFilter
+from CannyEdgeDetector import gaussFilter, sobel, gradientAndDirection, maxSuppress, hysteris, convertAngle
 
 # 5% tolerance
 RTOL = 0.05
